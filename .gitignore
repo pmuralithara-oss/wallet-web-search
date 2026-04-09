@@ -12,3 +12,5 @@ data/review_queue.csv
 pipeline.db
 logs/
 .venv/
+.env
+pipeline_social.db*
