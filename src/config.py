@@ -8,6 +8,8 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(PROJECT_ROOT / ".env")
 
 BRAVE_API_KEY = os.getenv("BRAVE_API_KEY", "")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "")
+GOOGLE_CX = os.getenv("GOOGLE_CX", "")
 
 DB_PATH = PROJECT_ROOT / "pipeline.db"
 
