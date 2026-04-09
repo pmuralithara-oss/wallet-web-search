@@ -1,0 +1,7 @@
+requests
+polars
+python-dotenv
+tqdm
+beautifulsoup4
+lxml
+readability-lxml

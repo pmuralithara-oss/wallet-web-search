@@ -1,0 +1,14 @@
+.env
+*.pyc
+__pycache__/
+data/input_whales.parquet
+data/search_results/
+data/fetched_pages/
+data/contexts/
+data/classification_prompts/
+data/classification_results/
+data/final_output.csv
+data/review_queue.csv
+pipeline.db
+logs/
+.venv/

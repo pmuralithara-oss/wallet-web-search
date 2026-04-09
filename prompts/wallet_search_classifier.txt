@@ -1,0 +1,81 @@
+You are analyzing a snippet of public web content that mentions a specific Ethereum wallet address known to belong to a heavy Polymarket trader. Your job is to determine whether this text constitutes first-person self-disclosure of a gambling problem BY THE OWNER OF THAT WALLET, or whether it is something else.
+
+You will receive: the wallet address, the URL the content came from, and a context window of text surrounding the wallet address. The wallet's identity as a Polymarket user is PRE-CONFIRMED by on-chain data. You do not need to judge whether they traded on Polymarket — they did. You only need to judge the text.
+
+## What you are classifying
+
+is_first_person_disclosure: "yes" only if the text contains the wallet owner disclosing their own gambling problem in first person. Acceptable: "I lost everything", "I'm addicted", "I can't stop", "I blew up my account", "I'm in GA", "this is my wallet and I have a problem", posts where someone describes their own emotional and financial distress in first person. NOT acceptable: discussing someone else's wallet, observing a third party's losses, neutral transaction descriptions, bragging about big bets without distress, academic or news discussion.
+
+is_wallet_owner_the_speaker: "yes" only if you are confident the author of the text is the owner of the wallet. Signals that yes: the author claims the wallet ("my wallet", "this is me", posting in first person about trades that match on-chain activity), the wallet appears in a profile or bio the author controls, the post is on the author's own timeline and they're describing their own experience. Signals that no: the wallet appears in a post pointing at someone ELSE ("look at this whale who lost $3M, address 0x..."), the post is a news article discussing a notable trader, the wallet appears in a leaderboard or aggregated dataset, the post is observing or mocking a third party. If the text is purely descriptive without any ownership claim, mark "unclear".
+
+BOTH must be "yes" for the hit to count as ground-truth disclosure. A third-party observation of a distressed trader is NOT self-disclosure even if the distress language is vivid.
+
+emotional_context: one of
+
+- "distress" — language of suffering, loss of control, shame, fear, desperation
+
+- "neutral" — transactional, factual, no emotional content
+
+- "bragging" — flexing wins or losses without distress
+
+- "ironic" — joking, memetic, performative, hyperbolic
+
+- "third_party_observation" — the speaker is describing someone else
+
+## Evidence requirement
+
+For every "yes" classification on either field, you must include at least one verbatim quote from the text as evidence in disclosure_evidence. Quote exactly — no paraphrasing. If you cannot produce a verbatim quote supporting a "yes", downgrade to "unclear". This is mandatory.
+
+## Edge cases
+
+- Etherscan comment threads: people sometimes leave emotional comments directly on transaction pages. These CAN be first-person disclosure if the author is the wallet owner. Check whether the comment comes from the wallet itself (Etherscan shows this).
+
+- Reddit posts where someone includes their wallet in a "help me I have a problem" post: classic positive case, mark yes/yes if the first-person distress is clear.
+
+- Twitter screenshots where someone shares a P&L image showing their wallet: usually first-person, but check if they're sharing in distress vs flexing.
+
+- News articles mentioning a notable Polymarket whale by wallet: mark no on both, third_party_observation.
+
+- Dune dashboards or leaderboards: mark no on both, third_party_observation. The author is the dashboard maker, not the wallet owner.
+
+- 4chan /biz/ posts: anonymous, often ironic. Mark unclear unless the first-person distress is unambiguous. Error toward unclear for /biz/ content specifically.
+
+- Posts where the wallet is one of many listed: the wallet is in a set, the author is not claiming it. Mark no.
+
+- Posts where someone writes "I lost $50K on polymarket, my wallet is 0x..." — textbook yes/yes.
+
+- Posts where someone writes "my friend lost $50K, his wallet is 0x..." — first-person language but NOT self-disclosure. Mark no on is_wallet_owner_the_speaker, note in reasoning.
+
+## Output format
+
+Return ONLY a JSON object with this exact schema, no preamble, no markdown fences, no explanation outside the JSON:
+
+{
+  "is_first_person_disclosure": "yes" | "no" | "unclear",
+  "is_wallet_owner_the_speaker": "yes" | "no" | "unclear",
+  "disclosure_evidence": [string, ...],
+  "emotional_context": "distress" | "neutral" | "bragging" | "ironic" | "third_party_observation",
+  "confidence": float between 0.0 and 1.0,
+  "needs_human_review": boolean,
+  "reasoning": "2-4 sentences explaining your decision"
+}
+
+Set needs_human_review to true if: the text is borderline, the authorship is ambiguous, the emotional register is hard to read, the source is unusual, or the classification depends on context not present in the snippet. Err toward flagging — false positives on the review flag are cheap.
+
+confidence reflects joint certainty across both classification fields. A clear yes/yes with a verbatim distress quote should be 0.9+. Anything with "unclear" on either field should be below 0.5.
+
+## Input
+
+Wallet address: {ADDRESS}
+
+Source URL: {URL}
+
+Source type: {SOURCE_TYPE}
+
+Context window:
+
+---
+
+{CONTEXT_TEXT}
+
+---
