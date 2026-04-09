@@ -1,4 +1,5 @@
 name: Wallet Address Search
+
 on:
   workflow_dispatch:
 
@@ -7,25 +8,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 180
     strategy:
-      matrix:
-        chunk_id: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
       fail-fast: false
+      matrix:
+        chunk: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
-      - name: Install deps
-        run: pip install polars requests beautifulsoup4 lxml
+      - run: pip install polars requests beautifulsoup4 lxml
 
-      - name: Run search chunk
-        run: python scripts/gh_actions_search.py ${{ matrix.chunk_id }} 20
+      - run: python scripts/gh_actions_search.py ${{ matrix.chunk }} 20
 
-      - name: Upload results
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: results-chunk-${{ matrix.chunk_id }}
-          path: results_chunk_${{ matrix.chunk_id }}.db
+          name: results-chunk-${{ matrix.chunk }}
+          path: results_chunk_${{ matrix.chunk }}.db
           retention-days: 7
