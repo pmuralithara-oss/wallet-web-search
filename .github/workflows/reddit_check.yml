@@ -1,0 +1,29 @@
+name: Reddit Handle Check
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        chunk: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install polars requests
+
+      - run: python scripts/gh_reddit_check.py ${{ matrix.chunk }} 20
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reddit-chunk-${{ matrix.chunk }}
+          path: reddit_chunk_${{ matrix.chunk }}.db
+          retention-days: 7
